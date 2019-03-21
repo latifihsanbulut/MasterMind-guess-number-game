@@ -21,6 +21,7 @@ namespace Mastermind
         int eksi_tutulan;
         int yeniDeğer;
         int eskiDeğer;
+        int en_iyi;
         int benzer;
         int benzer_count;
         int yasak_count;                // değişkenler
@@ -33,6 +34,7 @@ namespace Mastermind
         bool random_flag = false;
         bool yasak_flag = false;
         bool register_flag = false;
+        bool counter_flag = false;
 
         int[] tahmin = new int[4];
         int[] yasak = new int[10];
@@ -143,7 +145,16 @@ namespace Mastermind
             groupBox1.Enabled = true;
 
             uret();
-            textBox1.Text += array_to_int + "\r\n";         // OYUNU BAŞLAT butonuna basıldığında bilgisayarın sayı tutma ve ilk
+            if ((array_to_int / 1000) == 0)
+            {
+                textBox1.Text += "0" + array_to_int + "\r\n";
+            }
+
+            else
+            {
+                textBox1.Text += array_to_int + "\r\n";
+            }
+                                                             // OYUNU BAŞLAT butonuna basıldığında bilgisayarın sayı tutma ve ilk
             önceki_tahminler[Genel] = array_to_int;         // tahmini yapması
             Genel++;
             SayiTut();
@@ -337,20 +348,39 @@ namespace Mastermind
 
             else if(yeniDeğer < 4 && yeniDeğer > 0)         // ipucu olarak 1 2 3 rakamlarının verildiği durumlar
             {
-                if (yeniDeğer < eskiDeğer)                         // değiştirilen rakam dan dolayı ipucu düzeyi düşerse 
+                if(yeniDeğer >= eskiDeğer)
+                {
+                    en_iyi = array_to_int;
+
+                    if (yeniDeğer > eskiDeğer && counter_flag == false)
+                    {
+                        counter++;
+                    }
+                    counter_flag = false;
+
+                    if (counter == 4)
+                    {
+                        counter = 0;
+                    }
+                }
+
+
+                else if (yeniDeğer < eskiDeğer)                         // değiştirilen rakam dan dolayı ipucu düzeyi düşerse 
                 {                                                  // değiştirilen rakamın kullanıcının tuttuğu sayının bir  
-                    array_to_int = önceki_tahminler[Genel - 2];    // rakamı olduğunun tespiti ve eski hali üzerinden değişiklikler yapılması
+                    array_to_int = en_iyi;    // rakamı olduğunun tespiti ve eski hali üzerinden değişiklikler yapılması
                     tahmin[0] = array_to_int / 1000;
                     tahmin[1] = (array_to_int / 100) % 10;
                     tahmin[2] = (array_to_int / 10) % 10;
                     tahmin[3] = array_to_int % 10;
                     counter++;
+                    counter_flag = true;
+
+                    if (counter == 4)
+                    {
+                        counter = 0;
+                    }
                 }
 
-                else if (counter >= 4)
-                {
-                    counter = 0;
-                }
 
                 Aynı:
 
@@ -358,7 +388,7 @@ namespace Mastermind
 
                 sayaç++;
 
-                if (sayaç >= 10)
+                if (sayaç == 10)
                 {
                     sayaç = 0;
                 }
@@ -372,14 +402,18 @@ namespace Mastermind
                     }
                 }
 
-                for (int i = 0; i < 4; i++)
+                if (random_flag == false)
                 {
-                    if (sayaç == tahmin[i])
+                    for (int i = 0; i < 4; i++)
                     {
-                        random_flag = true;
-                        break;
+                        if (sayaç == tahmin[i])
+                        {
+                            random_flag = true;
+                            break;
+                        }
                     }
                 }
+                                    
 
                 if (random_flag == true)
                 {
@@ -480,8 +514,17 @@ namespace Mastermind
 
                     eksi_tutulan = eksi_tutulan - artı_tutulan;
 
-                    textBox2.Text += tahminin + "\r\n";                   // kullanıcının tahmin ettiği sayının CPU tarafından değerlendirilip 
-                    textBox3.Text += artı_tutulan + "\r\n";               // ipuclarının Kullanıcıya verilmesi
+                    if(tahminin/1000 == 0)
+                    {
+                        textBox2.Text += "0" + tahminin + "\r\n";              
+
+                    }
+                    else
+                    {
+                        textBox2.Text += tahminin + "\r\n";
+                    }
+                                                                // kullanıcının tahmin ettiği sayının CPU tarafından değerlendirilip 
+                    textBox3.Text += artı_tutulan + "\r\n";      // ipuclarının Kullanıcıya verilmesi
                     textBox4.Text += eksi_tutulan + "\r\n";
 
                     if (artı_tutulan == 4)
