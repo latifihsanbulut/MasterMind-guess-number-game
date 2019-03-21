@@ -21,6 +21,8 @@ namespace Mastermind
         int eksi_tutulan;
         int yeniDeğer;
         int eskiDeğer;
+        int benzer;
+        int benzer_count;
         int yasak_count;                // değişkenler
         int counter;
         int random;
@@ -30,6 +32,7 @@ namespace Mastermind
         int sayaç = -1;
         bool random_flag = false;
         bool yasak_flag = false;
+        bool register_flag = false;
 
         int[] tahmin = new int[4];
         int[] yasak = new int[10];
@@ -161,12 +164,12 @@ namespace Mastermind
 
             yeniDeğer = artı + eksi;
 
-            if (yeniDeğer > 4)           // 4 basamaklı sayılar üzerine yapılan bir oyun olduğu için
+            if (yeniDeğer > 4 || yeniDeğer < 0)           // 4 basamaklı sayılar üzerine yapılan bir oyun olduğu için
             {                           // ipuçları toplamı da en fazla 4 olabilir.
                 MessageBox.Show("Girdiğiniz ipucu yanlış. Lütfen doğru ipucu giriniz...");
             }
 
-            else if(yeniDeğer < 5)
+            else if(yeniDeğer < 5 && yeniDeğer >= 0)
             {
                 textBox6.Text += artı + "\r\n";
                 textBox7.Text += eksi + "\r\n";
@@ -230,30 +233,95 @@ namespace Mastermind
                     button1.Enabled = false;
                 }
 
-                ilk_1:
-
-                for (int i = 0; i < 4; i++)
+                else if(artı == 2 && register_flag == false)
                 {
-                    ilk_2:
-                    random = rnd.Next(0, 4);                    // rakamların rastgele karıştırılması
+                    benzer = array_to_int;
+                    register_flag = true;
 
-                    if (tahmin[random] == -1)
+                }
+
+                ilk_1:
+                
+                if (register_flag == true)
+                {
+                    int x1 = benzer / 1000;
+                    int x2 = (benzer / 100) % 10;
+                    int x3 = (benzer / 10) % 10;
+                    int x4 = benzer % 10;
+                    int temp;
+
+                    switch (benzer_count)
                     {
-                        goto ilk_2;
+                        case 0 :
+                            temp = x1;
+                            x1 = x2;
+                            x2 = temp;
+                            break;
+
+                        case 1 :
+                            temp = x3;
+                            x3 = x4;
+                            x4 = temp;
+                            break;
+
+                        case 2 :
+                            temp = x1;
+                            x1 = x3;
+                            x3 = temp;
+                            break;
+
+                        case 3 :
+                            temp = x2;
+                            x2 = x4;
+                            x4 = temp;
+                            break;
+
+                        case 4 :
+                            temp = x1;
+                            x1 = x4;
+                            x4 = temp;
+                            break;
+
+                        case 5 :
+                            temp = x2;
+                            x2 = x3;
+                            x3 = temp;
+                            break;
                     }
 
-                    last_list[i] = tahmin[random];
-                    tahmin[random] = -1;
-                }
-                                            
-                for(int k=0; k<4; k++)                              
-                {                                                   
-                    tahmin[k] = last_list[k];
+                    benzer_count++;
+
+                    array_to_int = (x1 * 1000) + (x2 * 100) + (x3 * 10) + x4;
+
                 }
 
-                array_to_int = (tahmin[0] * 1000) + (tahmin[1] * 100) + (tahmin[2] * 10) + tahmin[3];
+                else if (register_flag == false)
+                {
+                    for(int i = 0; i < 4; i++)
+                    {
+                        ilk_2:
+                        random = rnd.Next(0, 4);                    // rakamların rastgele karıştırılması
 
-                
+                        if (tahmin[random] == -1)
+                        {
+                            goto ilk_2;
+                        }
+
+                        last_list[i] = tahmin[random];
+                        tahmin[random] = -1;
+                    }
+
+                        for (int k = 0; k < 4; k++)
+                        {
+                            tahmin[k] = last_list[k];
+                        }
+
+                        array_to_int = (tahmin[0] * 1000) + (tahmin[1] * 100) + (tahmin[2] * 10) + tahmin[3];
+
+                }
+    
+
+
 
                 for (int i = 0; i < önceki_tahminler.Length; i++)           // üretilen sayının daha önce üretilen sayılarla 
                 {                                                           // aynı olmaması için kıyaslama yapılması
@@ -333,19 +401,9 @@ namespace Mastermind
             }
 
 
-            if (yeniDeğer < 4 && yeniDeğer >= 0)
+            if (yeniDeğer < 5 && yeniDeğer >= 0 )
             {
-                if ((array_to_int / 1000) == 0)
-                {
-                    textBox1.Text += "0" + array_to_int + "\r\n";       // üretilen sayının yazdırılması
-
-                }
-
-                else
-                {
-                    textBox1.Text += array_to_int + "\r\n";
-
-                }
+                
 
                 eskiDeğer = yeniDeğer;
                 Genel++;
@@ -360,8 +418,20 @@ namespace Mastermind
 
         private void button3_Click(object sender, EventArgs e)
         {
-                        
-            if(textBox5.Text.Length < 4 || textBox5.Text.Length > 4)
+            if ((array_to_int / 1000) == 0)
+            {
+                textBox1.Text += "0" + array_to_int + "\r\n";       // üretilen sayının yazdırılması
+
+            }
+
+            else
+            {
+                textBox1.Text += array_to_int + "\r\n";
+
+            }
+
+
+            if (textBox5.Text.Length < 4 || textBox5.Text.Length > 4)
             {
                 MessageBox.Show("Lütfen 4 Basamaklı Tahmininizi Girin");    // Hata Kontrolü
 
