@@ -15,23 +15,24 @@ namespace Mastermind
     {
         Random rnd = new Random(); //Rastgele sayı üretmek için kullanılacak sınıf
 
-        int artı;
-        int eksi;
-        int artı_tutulan;
-        int eksi_tutulan;
-        int yeniDeğer;
-        int eskiDeğer;
-        int en_iyi;
-        int benzer;
-        int benzer_count;
-        int yasak_count;                // değişkenler
-        int counter;
-        int random;
-        int array_to_int;
-        int Genel;
-        int tahminin;
+        int artı = 0;
+        int eksi = 0;
+        int artı_tutulan = 0;
+        int eksi_tutulan = 0;
+        int yeniDeğer = 0;
+        int eskiDeğer = 0;
+        int en_iyi = 0;
+        int benzer = 0;
+        int benzer_count = 0;
+        int yasak_count = 0;                // değişkenler
+        int counter = 0;
+        int random = 0;
+        int array_to_int = 0;
+        int Genel = 0;
+        int tahminin = 0;
         int sayaç = -1;
-        int tutulan_sayı;
+        int tutulan_sayı = 0;
+        int döngü = 0;
         bool random_flag = false;
         bool yasak_flag = false;
         bool register_flag = false;
@@ -392,25 +393,35 @@ namespace Mastermind
                 }
 
 
-                Aynı:
+            Aynı:
 
                 random_flag = false;
 
+                döngü++;
                 sayaç++;
+
+                if(döngü > 50)
+                {
+                    counter++;
+                }
 
                 if (sayaç == 10)
                 {
                     sayaç = 0;
                 }
 
-                for (int i = 0; i < 10; i++)
+                if(sayaç != 0)
                 {
-                    if (sayaç == yasak[i])
-                    {                                       // tahminler için basamak değiştirilirken kullanılacak rakamların
-                        random_flag = true;                 // diğer rakamlardan farklı olarak seçilmesi ve kullanıcının tuttuğu sayıda  
-                        break;                              // kullanılmadığı tespit edilen sayıların kullanılmaması
+                    for (int i = 0; i < yasak.Length; i++)
+                    {
+                        if (sayaç == yasak[i])
+                        {                                       // tahminler için basamak değiştirilirken kullanılacak rakamların
+                            random_flag = true;                 // diğer rakamlardan farklı olarak seçilmesi ve kullanıcının tuttuğu sayıda  
+                            break;                              // kullanılmadığı tespit edilen sayıların kullanılmaması
+                        }
                     }
                 }
+                
 
                 if (random_flag == false)
                 {
@@ -441,6 +452,7 @@ namespace Mastermind
                     }
                 }
                 önceki_tahminler[Genel] = array_to_int;
+                döngü = 0;
 
             }
 
