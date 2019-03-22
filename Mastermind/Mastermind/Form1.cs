@@ -31,6 +31,7 @@ namespace Mastermind
         int Genel;
         int tahminin;
         int sayaç = -1;
+        int tutulan_sayı;
         bool random_flag = false;
         bool yasak_flag = false;
         bool register_flag = false;
@@ -83,6 +84,8 @@ namespace Mastermind
                 durum = true;
 
             }
+
+            tutulan_sayı = (Tutulan[0] * 1000) + (Tutulan[1] * 100) + (Tutulan[2] * 10) + Tutulan[3];
 
         }
 
@@ -238,7 +241,14 @@ namespace Mastermind
             {                                               // doğru olduğu için rakamlar arasında yer değişikliği yapılması
                 if(artı == 4)
                 {
-                    MessageBox.Show("BEN KAZANDIM...");
+                    if(Tutulan[0] == 0)
+                    {
+                        MessageBox.Show("BEN KAZANDIM... \r\n TUTTUĞUM SAYI : 0" + tutulan_sayı);
+                    }
+                    else
+                    {
+                        MessageBox.Show("BEN KAZANDIM... \r\n TUTTUĞUM SAYI : " + tutulan_sayı);
+                    }
                     groupBox1.Enabled = false;
                     groupBox2.Enabled = false;
                     button1.Enabled = false;
