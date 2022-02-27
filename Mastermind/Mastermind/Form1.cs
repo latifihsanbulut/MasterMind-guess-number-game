@@ -1,570 +1,293 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Mastermind
-{
-   
+{   
     public partial class Form1 : Form
     {
-        Random rnd = new Random(); //Rastgele sayı üretmek için kullanılacak sınıf
+        Random rnd = new Random();
 
-        int artı = 0;
-        int eksi = 0;
-        int artı_tutulan = 0;
-        int eksi_tutulan = 0;
-        int yeniDeğer = 0;
-        int eskiDeğer = 0;
-        int en_iyi = 0;
-        int benzer = 0;
-        int benzer_count = 0;
-        int yasak_count = 0;                // değişkenler
-        int counter = 0;
-        int random = 0;
-        int array_to_int = 0;
-        int Genel = 0;
-        int tahminin = 0;
-        int sayaç = -1;
-        int tutulan_sayı = 0;
-        int döngü = 0;
-        bool random_flag = false;
-        bool yasak_flag = false;
-        bool register_flag = false;
-        bool counter_flag = false;
+        HashSet<string> POOL;
 
-        int[] tahmin = new int[4];
-        int[] yasak = new int[10];
-        int[] önceki_tahminler = new int[1000];         // Kullanılan Arrayler
-        int[] last_list = new int[4];
-        int[] Tutulan = new int[4];
-        int[] tahmin_edilen = new int[4];
-
-
-
-
-        public void SayiTut() //Basamakları birbirinden farklı 4 basamaklı random sayı üretimi
-        {
-
-            int yeni_sayi; //Her seferinde üretilecek sayımız.
-            bool durum = true;
-
-            for (int i = 0; i < Tutulan.Length; i++)
-            {
-                while (durum)
-                {
-                    yeni_sayi = rnd.Next(0, 10);
-
-                    if (i == 0)
-                    {
-                        Tutulan[0] = yeni_sayi;
-                        break; //While döngüsünden çıkılır.
-                    }
-
-                    //tutulan içersinde oluşturulan yeni sayıdan varmı diye kontrol ediliyor.
-                    //Varsa durum true oluyor ve for döngüsünden çıkıyor. Çünkü yeni bir sayı atamamız gerekiyor.
-                    for (int k = 0; k < i; k++)
-                    {
-                        if (Tutulan[k] == yeni_sayi) //Yeni oluşan sayımız dizide daha önceden varsa
-                        {
-                            durum = true;
-                            break; //for döngüsünden çık
-                        }
-                        else
-                            durum = false;
-                    }
-
-                    if (durum == false)
-                        Tutulan[i] = yeni_sayi;
-                }
-                durum = true;
-
-            }
-
-            tutulan_sayı = (Tutulan[0] * 1000) + (Tutulan[1] * 100) + (Tutulan[2] * 10) + Tutulan[3];
-
-        }
-
-        public void uret()//Basamakları birbirinden farklı 4 basamaklı random sayı üretimi
-        {
-            
-            int yeni_sayi; //Her seferinde üretilecek sayımız.
-            bool durum = true;
-
-            for (int i = 0; i < tahmin.Length; i++)
-            {
-                while (durum)
-                {
-                    yeni_sayi = rnd.Next(0, 10);
-
-                    if (i == 0)
-                    {
-                        tahmin[0] = yeni_sayi;
-                        break; //While döngüsünden çıkılır.
-                    }
-
-                    //tahmin içersinde oluşturulan yeni sayıdan varmı diye kontrol ediliyor.
-                    //Varsa durum true oluyor ve for döngüsünden çıkıyor. Çünkü yeni bir sayı atamamız gerekiyor.
-                    for (int k = 0; k < i; k++)
-                    {
-                        if (tahmin[k] == yeni_sayi) //Yeni oluşan sayımız dizide daha önceden varsa
-                        {
-                            durum = true;
-                            break; //for döngüsünden çık
-                        }
-                        else
-                            durum = false;
-                    }
-
-                    if (durum == false)
-                        tahmin[i] = yeni_sayi;
-                }
-                durum = true;
-
-            }
-
-            array_to_int = (tahmin[0] * 1000) + (tahmin[1] * 100) + (tahmin[2] * 10) + tahmin[3];
-
-        }
+        string keptNumber;
+        string lastGuessed;
 
         public Form1()
         {
-            
+
             InitializeComponent();
-            
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            
+            SetupGame();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void SetupGame()
         {
-            groupBox1.Enabled = true;
+            ClearFields();
+            FillPool();
+            GuessNumber();
+            PlayerTurn();
+        }
 
-            uret();
-            if ((array_to_int / 1000) == 0)
+        private void ClearFields()
+        {
+            textBox1.Clear();
+            textBox2.Clear();
+            textBox3.Clear();
+            textBox4.Clear();
+            textBox5.Clear();
+            textBox6.Clear();
+            textBox7.Clear();
+            textBox8.Clear();
+            textBox9.Clear();
+        }
+        private void FillPool()
+        {
+            POOL = new HashSet<string>();
+            for(int i=100; i<10000; i++)
             {
-                textBox1.Text += "0" + array_to_int + "\r\n";
+                if (i < 1000 && !i.ToString().Contains("0"))
+                {
+                    if (isUniqueDigits(i))
+                    {
+                        POOL.Add("0" + i.ToString());
+                    }
+
+                } else if(i > 1000)
+                {
+                    if (isUniqueDigits(i))
+                    {
+                        POOL.Add(i.ToString());
+                    }
+                }
+            }
+        }
+
+        private bool isUniqueDigits(int number)
+        {
+            var digits = new HashSet<string>(number.ToString().Select(digit => digit.ToString()).ToList());
+            return digits.Count().Equals(number.ToString().Length);
+        }
+
+
+        private AccuracyRate GetAccuracyRate(string relationNumber, string number)
+        {
+            int arti = 0;
+            int eksi = 0;
+
+            for(int i=0; i<number.Length; i++)
+            {
+                if (number[i].Equals(relationNumber[i]))
+                {
+                    arti++;
+                }else if (relationNumber.Contains(number[i]))
+                {
+                    eksi++;
+                }
             }
 
+            return (AccuracyRate)int.Parse(arti + "" + eksi);
+        }
+
+        private void GuessNumber()
+        {
+            keptNumber = POOL.ToList()[rnd.Next(0, POOL.Count())];
+        }
+
+        private void TahminYazdir()
+        {
+            if (POOL.Count().Equals(0))
+            {
+                MessageBox.Show("I have no guesses, there are errors in your tips. I will restart the game, you should be more careful. The number in my mind is " + keptNumber);
+                SetupGame();
+            }
             else
             {
-                textBox1.Text += array_to_int + "\r\n";
+                lastGuessed = POOL.ToList()[rnd.Next(0, POOL.Count())];
+                textBox1.Text += lastGuessed + "\r\n";
             }
-                                                             // OYUNU BAŞLAT butonuna basıldığında bilgisayarın sayı tutma ve ilk
-            önceki_tahminler[Genel] = array_to_int;         // tahmini yapması
-            Genel++;
-            SayiTut();
+        }
 
-            textBox8.Text = "0";
-            textBox9.Text = "0";
-
-            button1.Enabled = false;                        // oyun penceresinin aktif hale getirilmesi 
+        private void PlayerTurn()
+        {
+            groupBox1.Enabled = false;
             groupBox2.Enabled = true;
+        }
+        private void PcTurn()
+        {
             groupBox1.Enabled = true;
-            button3.Enabled = false;
+            groupBox2.Enabled = false;
+            TahminYazdir();
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void buttonIpucuVer(object sender, EventArgs e)
         {
-            artı = Convert.ToInt32(textBox8.Text);
-            eksi = Convert.ToInt32(textBox9.Text);            // Bilgisayarın ilk tahmininin ardından bilgisayara gönderilen ipuçları
-
-            yeniDeğer = artı + eksi;
-
-            if (yeniDeğer > 4 || yeniDeğer < 0)           // 4 basamaklı sayılar üzerine yapılan bir oyun olduğu için
-            {                           // ipuçları toplamı da en fazla 4 olabilir.
-                MessageBox.Show("Girdiğiniz ipucu yanlış. Lütfen doğru ipucu giriniz...");
-            }
-
-            else if(yeniDeğer < 5 && yeniDeğer >= 0)
+            if (string.IsNullOrEmpty(textBox8.Text) || string.IsNullOrEmpty(textBox9.Text))
             {
-                textBox6.Text += artı + "\r\n";
-                textBox7.Text += eksi + "\r\n";
-
-                textBox8.Text = "0";
-                textBox9.Text = "0";
+                MessageBox.Show("Please enter hint value");
+                return;
             }
-            
 
+            int hint = int.Parse(textBox8.Text) + int.Parse(textBox9.Text);
+            var accuracyRateOfPc = textBox8.Text + textBox9.Text;
 
-            if(yeniDeğer == 0)         // ipuçlarının toplamının "0" olması durumu
+            if ((hint) > 4)
             {
-                for(int i=0; i<tahmin.Length; i++)
-                {
-                    for(int k=0; k<yasak.Length; k++)       // bu durumda bilgisayarın tahmin ettiği 4 basamaklı sayıdaki 
-                    {                                       // hiçbir rakam kullanıcının tuttuğu sayıda yer almadığı için
-                        if(tahmin[i] == yasak[k])           // bu rakamları kullanılmayaklar arrayine ayırmaktadır.
-                        {
-                            yasak_flag = true;
-                            break;
-                        }
-
-                    }
-
-                    if(yasak_flag == false)
-                    {
-                        yasak[yasak_count] = tahmin[i];
-                        yasak_count++;
-
-                    }
-                }
-                Aynı_0:
-                uret();
-                for(int i=0; i<4; i++)
-                {                                               // üretilen sayının daha önce üretilen sayılarla 
-                    for(int k=0; k<yasak.Length; k++)           // aynı olmaması için kıyaslama yapılması
-                    {
-                        if(tahmin[i] == yasak[k])
-                        {
-                            goto Aynı_0;
-                        }
-                    }
-                }
-                for(int i=0; i<önceki_tahminler.Length; i++)
-                {
-                    if (array_to_int == önceki_tahminler[i])
-                    {
-                        goto Aynı_0;
-                    }
-                }
-                önceki_tahminler[Genel] = array_to_int;
+                MessageBox.Show("The sum of the plus and minus values of the hint you give, cannot exceed 4.");
             }
-
-            else if (yeniDeğer == 4)                        // ipucu olarak 4 gönderilmesi durumunda tüm rakamlar
-            {                                               // doğru olduğu için rakamlar arasında yer değişikliği yapılması
-                if(artı == 4)
-                {
-                    if(Tutulan[0] == 0)
-                    {
-                        MessageBox.Show("BEN KAZANDIM... \r\n TUTTUĞUM SAYI : 0" + tutulan_sayı);
-                    }
-                    else
-                    {
-                        MessageBox.Show("BEN KAZANDIM... \r\n TUTTUĞUM SAYI : " + tutulan_sayı);
-                    }
-                    groupBox1.Enabled = false;
-                    groupBox2.Enabled = false;
-                    button1.Enabled = false;
-                }
-
-                else if(artı == 2 && register_flag == false)
-                {
-                    benzer = array_to_int;
-                    register_flag = true;
-
-                }
-
-                ilk_1:
-                
-                if (register_flag == true)
-                {
-                    int x1 = benzer / 1000;
-                    int x2 = (benzer / 100) % 10;
-                    int x3 = (benzer / 10) % 10;
-                    int x4 = benzer % 10;
-                    int temp;
-
-                    switch (benzer_count)
-                    {
-                        case 0 :
-                            temp = x1;
-                            x1 = x2;
-                            x2 = temp;
-                            break;
-
-                        case 1 :
-                            temp = x3;
-                            x3 = x4;
-                            x4 = temp;
-                            break;
-
-                        case 2 :
-                            temp = x1;
-                            x1 = x3;
-                            x3 = temp;
-                            break;
-
-                        case 3 :
-                            temp = x2;
-                            x2 = x4;
-                            x4 = temp;
-                            break;
-
-                        case 4 :
-                            temp = x1;
-                            x1 = x4;
-                            x4 = temp;
-                            break;
-
-                        case 5 :
-                            temp = x2;
-                            x2 = x3;
-                            x3 = temp;
-                            break;
-                    }
-
-                    benzer_count++;
-
-                    array_to_int = (x1 * 1000) + (x2 * 100) + (x3 * 10) + x4;
-
-                }
-
-                else if (register_flag == false)
-                {
-                    for(int i = 0; i < 4; i++)
-                    {
-                        ilk_2:
-                        random = rnd.Next(0, 4);                    // rakamların rastgele karıştırılması
-
-                        if (tahmin[random] == -1)
-                        {
-                            goto ilk_2;
-                        }
-
-                        last_list[i] = tahmin[random];
-                        tahmin[random] = -1;
-                    }
-
-                        for (int k = 0; k < 4; k++)
-                        {
-                            tahmin[k] = last_list[k];
-                        }
-
-                        array_to_int = (tahmin[0] * 1000) + (tahmin[1] * 100) + (tahmin[2] * 10) + tahmin[3];
-
-                }
-    
-
-
-
-                for (int i = 0; i < önceki_tahminler.Length; i++)           // üretilen sayının daha önce üretilen sayılarla 
-                {                                                           // aynı olmaması için kıyaslama yapılması
-                    if (array_to_int == önceki_tahminler[i])
-                    {
-                        goto ilk_1;
-                    }
-                }
-                önceki_tahminler[Genel] = array_to_int;
-
-                
-            }
-
-            else if(yeniDeğer < 4 && yeniDeğer > 0)         // ipucu olarak 1 2 3 rakamlarının verildiği durumlar
+            else if (((AccuracyRate) int.Parse(accuracyRateOfPc)).Equals(AccuracyRate.ARTI4EKSI0))
             {
-                if(yeniDeğer >= eskiDeğer)
-                {
-                    en_iyi = array_to_int;
-
-                    if (yeniDeğer > eskiDeğer && counter_flag == false)
-                    {
-                        counter++;
-                    }
-                    counter_flag = false;
-
-                    if (counter == 4)
-                    {
-                        counter = 0;
-                    }
-                }
-
-
-                else if (yeniDeğer < eskiDeğer)                         // değiştirilen rakam dan dolayı ipucu düzeyi düşerse 
-                {                                                  // değiştirilen rakamın kullanıcının tuttuğu sayının bir  
-                    array_to_int = en_iyi;    // rakamı olduğunun tespiti ve eski hali üzerinden değişiklikler yapılması
-                    tahmin[0] = array_to_int / 1000;
-                    tahmin[1] = (array_to_int / 100) % 10;
-                    tahmin[2] = (array_to_int / 10) % 10;
-                    tahmin[3] = array_to_int % 10;
-                    counter++;
-                    counter_flag = true;
-
-                    if (counter == 4)
-                    {
-                        counter = 0;
-                    }
-                }
-
-
-            Aynı:
-
-                random_flag = false;
-
-                döngü++;
-                sayaç++;
-
-                if(döngü > 50)
-                {
-                    counter++;
-                }
-
-                if (sayaç == 10)
-                {
-                    sayaç = 0;
-                }
-
-                if(sayaç != 0)
-                {
-                    for (int i = 0; i < yasak.Length; i++)
-                    {
-                        if (sayaç == yasak[i])
-                        {                                       // tahminler için basamak değiştirilirken kullanılacak rakamların
-                            random_flag = true;                 // diğer rakamlardan farklı olarak seçilmesi ve kullanıcının tuttuğu sayıda  
-                            break;                              // kullanılmadığı tespit edilen sayıların kullanılmaması
-                        }
-                    }
-                }
-                
-
-                if (random_flag == false)
-                {
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (sayaç == tahmin[i])
-                        {
-                            random_flag = true;
-                            break;
-                        }
-                    }
-                }
-                                    
-
-                if (random_flag == true)
-                {
-                    goto Aynı;
-                }
-
-                tahmin[counter] = sayaç;
-                array_to_int = (tahmin[0] * 1000) + (tahmin[1] * 100) + (tahmin[2] * 10) + tahmin[3];
-
-                for (int i = 0; i < önceki_tahminler.Length; i++)           // üretilen sayının daha önce üretilen sayılarla 
-                {                                                           // aynı olmaması için kıyaslama yapılması
-                    if (array_to_int == önceki_tahminler[i])
-                    {
-                        goto Aynı;
-                    }
-                }
-                önceki_tahminler[Genel] = array_to_int;
-                döngü = 0;
-
+                FinishGame(false);
             }
-
-
-            if (yeniDeğer < 5 && yeniDeğer >= 0 )
-            {
-                
-
-                eskiDeğer = yeniDeğer;
-                Genel++;
-                button2.Enabled = false;                    // sıranın kullanıcıya geçmesi
-                button3.Enabled = true;
-
-            }
-
-
-
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            if ((array_to_int / 1000) == 0)
-            {
-                textBox1.Text += "0" + array_to_int + "\r\n";       // üretilen sayının yazdırılması
-
-            }
-
             else
             {
-                textBox1.Text += array_to_int + "\r\n";
+                var newPool = new HashSet<string>();
 
+                foreach(var number in POOL)
+                {
+                    if (!number.Equals(lastGuessed))
+                    {
+                        var rate = ((int)GetAccuracyRate(number, lastGuessed)).ToString();
+                        rate = rate.Length > 1 ? rate : "0" + rate;
+                        if (accuracyRateOfPc.Equals(rate))
+                        {
+                            newPool.Add(number);
+                        }
+                    }
+                }
+                POOL = new HashSet<string>(newPool);
+                textBox7.Text += textBox8.Text + "\r\n";
+                textBox6.Text += textBox9.Text + "\r\n";
+                textBox8.Clear();
+                textBox9.Clear();
+                PlayerTurn();
             }
 
+        }
 
-            if (textBox5.Text.Length < 4 || textBox5.Text.Length > 4)
+        private void buttonTahminEt(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(textBox5.Text))
             {
-                MessageBox.Show("Lütfen 4 Basamaklı Tahmininizi Girin");    // Hata Kontrolü
-
+                MessageBox.Show("Please enter your guess");
+                return;
             }
 
+            int guess = int.Parse(textBox5.Text);
+            if (guess < 1000 && guess.ToString().Contains("0"))
+            {
+                MessageBox.Show("The digits of the prediction you entered must be different from each other");
+                return;
+            }
             else
             {
-                tahminin = Convert.ToInt32(textBox5.Text);
-                int a = tahminin / 1000;
-                int b = (tahminin / 100) % 10;
-                int c = (tahminin / 10) % 10;
-                int d = tahminin % 10;
-
-                if (a == b || a == c || a == d || b == c || b == d || c == d)
+                if (!isUniqueDigits(guess))
                 {
-                    MessageBox.Show("Birbirinden farklı rakamlar giriniz.");    // Hata Kontrolü
-
+                    MessageBox.Show("The digits of the prediction you entered must be different from each other");
+                    return;
                 }
+            }
 
-                else
-                {
-                    textBox5.Text = "";
-                    tahmin_edilen[0] = tahminin / 1000;
-                    tahmin_edilen[1] = (tahminin / 100) % 10;           // Kullanıcıdan alınan 4 basamaklı sayının  
-                    tahmin_edilen[2] = (tahminin / 10) % 10;            // basamaklarına ayrılması
-                    tahmin_edilen[3] = tahminin % 10;
-
-                    for (int i = 0; i < 4; i++)
-                    {
-                        if (Tutulan[i] == tahmin_edilen[i])
-                        {
-                            artı_tutulan++;                   // Basamak değerleri ve rakam değerleri doğru bilinen rakamların tespiti 
-                        }
-                    }
-
-                    for (int i = 0; i < 4; i++)
-                    {
-                        for (int k = 0; k < 4; k++)
-                        {
-                            if (Tutulan[i] == tahmin_edilen[k])
-                            {                                           //rakam değerleri doğru bilinen rakamların tespiti
-                                eksi_tutulan++;
-                            }
-                        }
-                    }
-
-                    eksi_tutulan = eksi_tutulan - artı_tutulan;
-
-                    if(tahminin/1000 == 0)
-                    {
-                        textBox2.Text += "0" + tahminin + "\r\n";              
-
-                    }
-                    else
-                    {
-                        textBox2.Text += tahminin + "\r\n";
-                    }
-                                                                // kullanıcının tahmin ettiği sayının CPU tarafından değerlendirilip 
-                    textBox3.Text += artı_tutulan + "\r\n";      // ipuclarının Kullanıcıya verilmesi
-                    textBox4.Text += eksi_tutulan + "\r\n";
-
-                    if (artı_tutulan == 4)
-                    {
-                        MessageBox.Show("TEBRİKLER KAZANDINIZ...");
-                        groupBox1.Enabled = false;                         // Kullanıcının doğru tahmine ulaşma durumu
-                        groupBox2.Enabled = false;
-                        button1.Enabled = false;
-                    }
-
-                    artı_tutulan = 0;
-                    eksi_tutulan = 0;
-
-                    button2.Enabled = true;
-                    button3.Enabled = false;
-                }
-            
+            if (textBox5.Text.Equals(keptNumber))
+            {
+                FinishGame(true);
+            }
+            else
+            {
+                var accuracyRateOfPlayer = ((int)GetAccuracyRate(textBox5.Text, keptNumber)).ToString();
+                accuracyRateOfPlayer = accuracyRateOfPlayer.Length > 1 ? accuracyRateOfPlayer : "0" + accuracyRateOfPlayer;
+                textBox3.Text += accuracyRateOfPlayer[0] + "\r\n";
+                textBox4.Text += accuracyRateOfPlayer[1] + "\r\n";
+                textBox2.Text += textBox5.Text + "\r\n";
+                textBox5.Clear();
+                PcTurn();
             }
         }
+
+        private void FinishGame(bool playerWon)
+        {
+            if (playerWon)
+            {
+                MessageBox.Show(("Congratulations, you won. Let's start the new game").ToUpper());
+            }
+            else
+            {
+                MessageBox.Show(("I won :) The number in my mind is " + keptNumber + "\r\n Let's start the new game").ToUpper());
+            }
+            SetupGame();
+        }
+
+
+        private void textBox8_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            Char chr = e.KeyChar;
+
+            if(chr != 8 && textBox8.Text.Length > 0)
+            {
+                e.Handled = true;
+            }
+            else if (chr != 8 && chr != 48 && chr != 49 && chr != 50 && chr != 51 && chr != 52)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void textBox9_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            Char chr = e.KeyChar;
+
+            if (chr != 8 && textBox9.Text.Length > 0)
+            {
+                e.Handled = true;
+            }
+            else if (chr != 8 && chr != 48 && chr != 49 && chr != 50 && chr != 51 && chr != 52)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void textBox5_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            Char chr = e.KeyChar;
+
+            if (chr != 8 && textBox5.Text.Length > 3)
+            {
+                e.Handled = true;
+            }
+            else if (chr != 8 && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+        }
+
+    }
+
+    enum AccuracyRate
+    {
+        ARTI0EKSI0 = 0,
+
+        ARTI0EKSI1 = 1,
+        ARTI0EKSI2 = 2,
+        ARTI0EKSI3 = 3,
+        ARTI0EKSI4 = 4,
+
+        ARTI1EKSI0 = 10,
+        ARTI1EKSI1 = 11,
+        ARTI1EKSI2 = 12,
+        ARTI1EKSI3 = 13,
+
+        ARTI2EKSI0 = 20,
+        ARTI2EKSI1 = 21,
+        ARTI2EKSI2 = 22,
+
+        ARTI3EKSI0 = 30,
+
+        ARTI4EKSI0 = 40
     }
 }
