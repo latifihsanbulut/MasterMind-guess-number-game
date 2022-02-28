@@ -126,7 +126,7 @@ namespace Mastermind
             TahminYazdir();
         }
 
-        private void buttonIpucuVer(object sender, EventArgs e)
+        private void buttonGiveClue(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(textBox8.Text) || string.IsNullOrEmpty(textBox9.Text))
             {
@@ -171,7 +171,7 @@ namespace Mastermind
 
         }
 
-        private void buttonTahminEt(object sender, EventArgs e)
+        private void buttonGuessIt(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(textBox5.Text))
             {
@@ -265,7 +265,6 @@ namespace Mastermind
                 e.Handled = true;
             }
         }
-
     }
 
     enum AccuracyRate
